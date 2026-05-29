@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "941472432447",
+    "project_id": "lala-ba34c",
+    "storage_bucket": "lala-ba34c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:941472432447:android:3238c94c864c078f59538a",
+        "android_client_info": {
+          "package_name": "com.example.lala"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJlaE0PF9elsWeEw_Rz9MEPIiirbBuh1I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
