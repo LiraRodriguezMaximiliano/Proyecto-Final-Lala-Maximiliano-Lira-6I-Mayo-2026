@@ -10,6 +10,77 @@ import '../../widgets/custom_drawer.dart';
 class CartScreen extends StatelessWidget {
   const CartScreen({Key? key}) : super(key: key);
 
+  void _showPaymentDialog(BuildContext context, CartProvider cart, UserProvider userProv, String userId) {
+  String paymentMethod = 'Efectivo';
+  final cardCtrl = TextEditingController();
+  final expCtrl = TextEditingController();
+  final cvvCtrl = TextEditingController();
+
+  showDialog(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setDialogState) => AlertDialog(
+        title: const Text('Método de Pago', style: TextStyle(color: Color(0xFF005CBB))),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RadioListTile(
+                title: const Text('Efectivo'),
+                value: 'Efectivo',
+                groupValue: paymentMethod,
+                onChanged: (val) => setDialogState(() => paymentMethod = val.toString()),
+              ),
+              RadioListTile(
+                title: const Text('Tarjeta de Crédito/Débito'),
+                value: 'Tarjeta',
+                groupValue: paymentMethod,
+                onChanged: (val) => setDialogState(() => paymentMethod = val.toString()),
+              ),
+              if (paymentMethod == 'Tarjeta') ...[
+                const SizedBox(height: 10),
+                TextField(controller: cardCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Número de Tarjeta', hintText: '1234 5678 9123 4567')),
+                Row(
+                  children: [
+                    Expanded(child: TextField(controller: expCtrl, decoration: const InputDecoration(labelText: 'Vencimiento', hintText: 'MM/AA'))),
+                    const SizedBox(width: 15),
+                    Expanded(child: TextField(controller: cvvCtrl, obscureText: true, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'CVV'))),
+                  ],
+                )
+              ]
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF005CBB)),
+            onPressed: () async {
+              if (paymentMethod == 'Tarjeta' && (cardCtrl.text.isEmpty || expCtrl.text.isEmpty || cvvCtrl.text.isEmpty)) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Por favor llena los datos de la tarjeta')));
+                return;
+              }
+              
+              bool ok = await userProv.checkout(
+                userId: userId, 
+                cartItems: cart.items.values.toList(), 
+                total: cart.totalAmount
+              );
+              
+              Navigator.pop(context);
+              if (ok) {
+                cart.clearCart();
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('¡Pedido confirmado con éxito!')));
+              }
+            },
+            child: const Text('Confirmar Pedido', style: TextStyle(color: Colors.white)),
+          )
+        ],
+      ),
+    ),
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
@@ -58,8 +129,7 @@ class CartScreen extends StatelessWidget {
                     onPressed: cart.items.isEmpty ? null : () async {
                       bool ok = await userProv.checkout(userId: auth.currentUser!.uid, cartItems: cart.items.values.toList(), total: cart.totalAmount);
                       if (ok) {
-                        cart.clearCart();
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pedido procesado con éxito')));
+                        _showPaymentDialog(context, cart, userProv, auth.currentUser!.uid);
                       }
                     },
                     child: const Text('Proceder al pago', style: TextStyle(color: Color(0xFF005CBB))),
