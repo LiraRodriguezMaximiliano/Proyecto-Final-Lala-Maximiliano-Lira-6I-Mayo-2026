@@ -133,6 +133,40 @@ class _AdminCrudScreenState extends State<AdminCrudScreen> {
     );
   }
 
+  void _showStatusDialog(BuildContext context, String orderId, String currentStatus) {
+    String selectedStatus = currentStatus;
+    final adminProv = Provider.of<AdminProvider>(context, listen: false);
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Actualizar Estado del Pedido'),
+          content: DropdownButton<String>(
+            value: selectedStatus,
+            isExpanded: true,
+            items: ['procesando', 'en camino', 'entregado'].map((String val) {
+              return DropdownMenuItem<String>(value: val, child: Text(val.toUpperCase()));
+            }).toList(),
+            onChanged: (val) => setDialogState(() => selectedStatus = val!),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              onPressed: () async {
+                await adminProv.updateOrderStatus(orderId, selectedStatus);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Estado actualizado correctamente')));
+              },
+              child: const Text('Actualizar', style: TextStyle(color: Colors.white)),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
   // --- GUARDAR / ACTUALIZAR EN FIREBASE ---
   void _saveData(BuildContext context, bool isEditing, String? docId) async {
     final adminProv = Provider.of<AdminProvider>(context, listen: false);
@@ -291,6 +325,11 @@ class _AdminCrudScreenState extends State<AdminCrudScreen> {
                               IconButton(
                                 icon: const Icon(Icons.edit, color: Colors.blue),
                                 onPressed: () => _showFormSheet(context, item: item),
+                              ),
+                            if (widget.collectionType == 'orders')
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                onPressed: () => _showStatusDialog(context, item.id, item.status),
                               ),
                             IconButton(
                               icon: const Icon(Icons.delete, color: Colors.red),
