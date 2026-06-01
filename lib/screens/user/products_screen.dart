@@ -5,6 +5,7 @@ import '../../providers/cart_provider.dart';
 import '../../widgets/custom_header.dart';
 import '../../widgets/custom_footer.dart';
 import '../../widgets/custom_drawer.dart';
+import 'product_detail_screen.dart';
 
 class ProductsScreen extends StatelessWidget {
   final String category; // 'lacteo' o 'no-lacteo'
@@ -34,23 +35,33 @@ class ProductsScreen extends StatelessWidget {
                   itemBuilder: (context, i) {
                     final prod = products[i];
                     return Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            Expanded(child: Image.network(prod.imageUrl, fit: BoxFit.contain)),
-                            Text(prod.name, style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1),
-                            Text('\$${prod.price.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFF005CBB))),
-                            IconButton(
-                              icon: const Icon(Icons.add_shopping_cart, color: Color(0xFF005CBB)),
-                              onPressed: () {
-                                cartProvider.addProduct(prod);
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Agregado al carrito'), duration: Duration(seconds: 1)));
-                              },
-                            )
-                          ],
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ProductDetailScreen(product: prod),
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            children: [
+                              Expanded(child: Image.network(prod.imageUrl, fit: BoxFit.contain)),
+                              Text(prod.name, style: const TextStyle(fontWeight: FontWeight.bold), maxLines: 1),
+                              Text('\$${prod.price.toStringAsFixed(2)}', style: const TextStyle(color: Color(0xFF005CBB))),
+                              IconButton(
+                                icon: const Icon(Icons.add_shopping_cart, color: Color(0xFF005CBB)),
+                                onPressed: () {
+                                  cartProvider.addProduct(prod);
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Agregado al carrito'), duration: Duration(seconds: 1)));
+                                },
+                              )
+                            ],
+                          ),
                         ),
-                      ),
+                      )
                     );
                   },
                 );
